@@ -1,0 +1,64 @@
+# Kon Full Battle (Complex Undertale-Style)
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Kon Battle</title>
+  <style>
+    body {
+      font-family: "Courier New", Courier, monospace;
+      background-color: black;
+      color: white;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      margin: auto;
+      background-color: black;
+      border: 2px solid white;
+    }
+
+    #ui {
+      text-align: center;
+      position: absolute;
+      bottom: 20px;
+      width: 100%;
+    }
+
+    .btn {
+      font-family: "Courier New", Courier, monospace;
+      padding: 10px 20px;
+      margin: 10px;
+      background-color: white;
+      color: black;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background-color: gray;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="battleCanvas" width="600" height="400"></canvas>
+  <div id="ui">
+    <button class="btn" onclick="fight()">Fight</button>
+    <button class="btn" onclick="act()">Act</button>
+    <button class="btn" onclick="useItem()">Item</button>
+    <button class="btn" onclick="mercy()">Mercy</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("battleCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // Placeholder for deeper mechanics involving bullet attacks and animations 
+
+
+
+/*KEY CORE design 
+ *MINIGAMES, BUTTONS , REDONE  message.../tech/ 
