@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Kon Battle</title>
+  <style>
+    body {
+      font-family: "Courier New", Courier, monospace;
+      background-color: black;
+      color: white;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      margin: auto;
+      background-color: black;
+      border: 2px solid white;
+    }
+
+    #ui {
+      text-align: center;
+      position: absolute;
+      bottom: 20px;
+      width: 100%;
+    }
+
+    .btn {
+      font-family: "Courier New", Courier, monospace;
+      padding: 10px 20px;
+      margin: 10px;
+      background-color: white;
+      color: black;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background-color: gray;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="battleCanvas" width="600" height="400"></canvas>
+  <div id="ui">
+    <button class="btn" onclick="fight()">Fight</button>
+    <button class="btn" onclick="act()">Act</button>
+    <button class="btn" onclick="useItem()">Item</button>
+    <button class="btn" onclick="mercy()">Mercy</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("battleCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // Player state
+    let player = {
+      x: canvas.width / 2 - 10,
+      y: canvas.height - 50,
+      width: 20,
+      height: 20,
+      color: "red",
+      health: 100,
+      maxHealth: 100,
+    };
+
+    // Enemy state
+    let kon = {
+      health: 200,
+      maxHealth: 200,
+      dialogue: [
+        "Kon: You really think you can beat me?",
+        "Kon: I won't go easy on you!",
+        "Kon: Dodge this, if you can!",
+      ],
+      dialogueIndex: 0,
+    };
+
+    // Bullets array
+    let bullets = [];
+
+    // Game state
+    let gameState = "idle"; // "idle", "attacking", "gameOver"
+
+    // Draw player
+    function drawPlayer() {
+      ctx.fillStyle = player.color;
+      ctx.fillRect(player.x, player.y, player.width, player.height);
+    }
+
+    // Draw enemy health bar
+    function drawEnemyHealth() {
+      ctx.fillStyle = "white";
+      ctx.fillRect(150, 10, 300, 20);
+      ctx.fillStyle = "red";
+      const healthWidth = (kon.health / kon.maxHealth) * 300;
+      ctx.fillRect(150, 10, healthWidth, 20);
+    }
+
+    // Draw player health bar
+    function drawPlayerHealth() {
+      ctx.fillStyle = "white";
+      ctx.fillRect(150, 370, 300, 20);
+      ctx.fillStyle = "green";
+      const healthWidth = (player.health / player.maxHealth) * 300;
+      ctx.fillRect(150, 370, healthWidth, 20);
+    }
+
+    // Draw bullets
+    function drawBullets() {
+      bullets.forEach((bullet) => {
+        ctx.fillStyle = bullet.color;
+        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+      });
+    }
+
+    // Update bullets
+    function updateBullets() {
+      bullets.forEach((bullet, index) => {
+        bullet.y += bullet.speed;
+
+        // Check collision with player
+        if (
+          bullet.x < player.x + player.width &&
+          bullet.x + bullet.width > player.x &&
+          bullet.y < player.y + player.height &&
+          bullet.y + bullet.height > player.y
+        ) {
+          player.health -= 10;
+          bullets.splice(index, 1);
+          if (player.health <= 0) {
+            gameState = "gameOver";
+          }
+        }
+
+        // Remove bullets that are off-screen
+        if (bullet.y > canvas.height) {
+          bullets.splice(index, 1);
+        }
+      });
+    }
+
+    // Spawn bullets
+    function spawnBullets() {
+      for (let i = 0; i < 10; i++) {
+        bullets.push({
+          x: Math.random() * canvas.width,
+          y: -10,
+          width: 10,
+          height: 10,
+          color: "white",
+          speed: 3 + Math.random() * 2,
+        });
+      }
+    }
+
+    // Handle fight button
+    function fight() {
+      if (gameState !== "idle") return;
+
+      kon.health -= 50;
+      if (kon.health <= 0) {
+        kon.health = 0;
+        gameState = "gameOver";
+      } else {
+        kon.dialogueIndex = (kon.dialogueIndex + 1) % kon.dialogue.length;
+        gameState = "attacking";
+        spawnBullets();
+
+        setTimeout(() => {
+          gameState = "idle";
+        }, 5000);
+      }
+    }
+
+    // Handle act button
+    function act() {
+      alert("You try to reason with Kon, but he ignores you.");
+    }
+
+    // Handle item button
+    function useItem() {
+      if (player.health < player.maxHealth) {
+        player.health += 20;
+        if (player.health > player.maxHealth) player.health = player.maxHealth;
+      } else {
+        alert("Your health is already full!");
+      }
+    }
+
+    // Handle mercy button
+    function mercy() {
+      alert("Kon smirks: 'I'll let you go... for now.'");
+      gameState = "gameOver";
+    }
+
+    // Game loop
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      drawPlayer();
+      drawEnemyHealth();
+      drawPlayerHealth();
+
+      if (gameState === "attacking") {
+        drawBullets();
+        updateBullets();
+      }
+
+      if (gameState === "gameOver") {
+        ctx.fillStyle = "white";
+        ctx.font = "30px Courier New";
+        ctx.fillText("Game Over", canvas.width / 2 - 80, canvas.height / 2);
+        return;
+      }
+
+      ctx.fillStyle = "white";
+      ctx.font = "16px Courier New";
+      ctx.fillText(
+        kon.dialogue[kon.dialogueIndex],
+        canvas.width / 2 - 150,
+        canvas.height / 2 - 50
+      );
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    // Movement controls
+    document.addEventListener("keydown", (e) => {
+      if (gameState !== "attacking") return;
+
+      if (e.key === "ArrowUp" && player.y > 0) player.y -= 10;
+      if (e.key === "ArrowDown" && player.y < canvas.height - player.height)
+        player.y += 10;
+      if (e.key === "ArrowLeft" && player.x > 0) player.x -= 10;
+      if (e.key === "ArrowRight" && player.x < canvas.width - player.width)
+        player.x += 10;
+    });
+
+    gameLoop();
+  </script>
+</body>
+</html>
